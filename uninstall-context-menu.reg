@@ -1,0 +1,10 @@
+Windows Registry Editor Version 5.00
+
+; Claude Code - Windows 11 Context Menu Integration
+; Deinstallation - Entfernt alle Kontextmen\u00fc-Eintr\u00e4ge
+
+; Entferne Ordner-Kontextmen\u00fc
+[-HKEY_CLASSES_ROOT\Directory\shell\ClaudeCode]
+
+; Entferne Hintergrund-Kontextmen\u00fc
+[-HKEY_CLASSES_ROOT\Directory\Background\shell\ClaudeCode]

@@ -1,5 +1,5 @@
 # Claude Code - Windows 11 Context Menu Integration
-# Installation Script
+# Installation Script with Windows Terminal Support
 
 # Require Administrator privileges
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
@@ -12,15 +12,53 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 Write-Host "=== Claude Code - Windows 11 Kontextmenue Installation ===" -ForegroundColor Cyan
 Write-Host ""
 
+# Check if Windows Terminal is installed
+$wtInstalled = Get-Command wt.exe -ErrorAction SilentlyContinue
+
+# Check if Claude Code profile is installed
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+$guidFile = Join-Path $scriptPath "claude-profile-guid.txt"
+$profileInstalled = Test-Path $guidFile
+
+if ($wtInstalled -and $profileInstalled) {
+    Write-Host "Windows Terminal mit Claude Code Profil erkannt!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Waehlen Sie den Startmodus:" -ForegroundColor Yellow
+    Write-Host "  [1] Windows Terminal mit Claude Code Profil (empfohlen)" -ForegroundColor Cyan
+    Write-Host "  [2] Klassisches PowerShell-Fenster" -ForegroundColor Gray
+    Write-Host ""
+    $choice = Read-Host "Ihre Wahl (1 oder 2)"
+    $useWindowsTerminal = $choice -eq "1"
+} elseif ($wtInstalled) {
+    Write-Host "Windows Terminal erkannt, aber Claude Code Profil nicht installiert." -ForegroundColor Yellow
+    Write-Host "Fuehren Sie zuerst 'install-terminal-profile.ps1' aus fuer das beste Erlebnis." -ForegroundColor Yellow
+    Write-Host ""
+    $useWindowsTerminal = $false
+} else {
+    Write-Host "Windows Terminal nicht erkannt. Verwende PowerShell." -ForegroundColor Yellow
+    Write-Host ""
+    $useWindowsTerminal = $false
+}
+
 # Registry paths
 $directoryShell = "Registry::HKEY_CLASSES_ROOT\Directory\shell\ClaudeCode"
 $directoryCommand = "Registry::HKEY_CLASSES_ROOT\Directory\shell\ClaudeCode\command"
 $backgroundShell = "Registry::HKEY_CLASSES_ROOT\Directory\Background\shell\ClaudeCode"
 $backgroundCommand = "Registry::HKEY_CLASSES_ROOT\Directory\Background\shell\ClaudeCode\command"
 
-# Command to execute (opens PowerShell and runs Claude Code)
-$commandDirectory = 'powershell.exe -NoExit -Command "cd \"%V\"; claude"'
-$commandBackground = 'powershell.exe -NoExit -Command "cd \"%V\"; claude"'
+# Command to execute
+if ($useWindowsTerminal) {
+    # Windows Terminal with Claude Code profile
+    $commandDirectory = 'wt.exe -p "Claude Code" -d "%V" -- claude'
+    $commandBackground = 'wt.exe -p "Claude Code" -d "%V" -- claude'
+    Write-Host "Modus: Windows Terminal mit Claude Code Profil" -ForegroundColor Cyan
+} else {
+    # Classic PowerShell
+    $commandDirectory = 'powershell.exe -NoExit -Command "cd \"%V\"; claude"'
+    $commandBackground = 'powershell.exe -NoExit -Command "cd \"%V\"; claude"'
+    Write-Host "Modus: Klassisches PowerShell-Fenster" -ForegroundColor Gray
+}
+Write-Host ""
 
 # Claude icon path
 $claudeIcon = "$env:USERPROFILE\.local\bin\claude.exe,0"

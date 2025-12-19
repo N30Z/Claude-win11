@@ -15,11 +15,33 @@ Fügt Claude Code direkt in das Windows 11 Kontextmenü ein:
 - **Rechtsklick auf Ordner**: "in Claude Code öffnen"
 - **Rechtsklick im Hintergrund**: "Claude Code hier öffnen"
 
-Öffnet automatisch ein PowerShell-Fenster und startet Claude Code im ausgewählten Verzeichnis.
+Öffnet automatisch ein Terminal-Fenster und startet Claude Code im ausgewählten Verzeichnis.
+
+### ✅ Einzigartiges Claude Code Fenster (NEU)
+
+Ein speziell gestaltetes Terminal-Profil für Claude Code mit:
+
+- **Claude Dark Theme**: Dunkler Hintergrund mit lila/orange Akzenten
+- **Angepasste Schriftart**: Cascadia Code für optimale Lesbarkeit
+- **Acryl-Transparenz**: Modernes Windows 11 Design
+- **Claude Icon**: Eigenes Icon in der Titelleiste und Taskleiste
+- **Dediziertes Profil**: Separates Windows Terminal-Profil für Claude Code
+
+![Claude Dark Theme](https://img.shields.io/badge/Theme-Claude%20Dark-1a1a2e?style=flat&labelColor=7c5cff)
 
 ## Installation
 
-### Kontextmenü-Integration
+### 1. Einzigartiges Claude Code Fenster (Empfohlen)
+
+Installieren Sie zuerst das Windows Terminal-Profil für das beste Erlebnis:
+
+```powershell
+.\install-terminal-profile.ps1
+```
+
+Dies fügt ein "Claude Code" Profil mit dem Claude Dark Theme zu Windows Terminal hinzu.
+
+### 2. Kontextmenü-Integration
 
 **Schnellinstallation (PowerShell):**
 
@@ -28,11 +50,12 @@ Fügt Claude Code direkt in das Windows 11 Kontextmenü ein:
    ```powershell
    .\install-context-menu.ps1
    ```
+3. Wählen Sie "Windows Terminal" wenn das Profil installiert ist
 
-**Alternative (Registry-Datei):**
+**Alternative (Registry-Dateien):**
 
-1. Doppelklicken Sie auf `install-context-menu.reg`
-2. Bestätigen Sie die Sicherheitsabfrage
+- `install-context-menu-wt.reg` - Für Windows Terminal (empfohlen)
+- `install-context-menu.reg` - Für klassisches PowerShell
 
 **Detaillierte Anleitung**: Siehe [Kontext-menu.md](Kontext-menu.md)
 
@@ -40,17 +63,34 @@ Fügt Claude Code direkt in das Windows 11 Kontextmenü ein:
 
 - Windows 11 (oder Windows 10)
 - Claude Code installiert (via npm oder npx)
-- Administratorrechte für die Installation
+- Windows Terminal (empfohlen, für das einzigartige Claude Code Fenster)
+- Administratorrechte für die Kontextmenü-Installation
 
 ## Dateien
 
-- `install-context-menu.ps1` - PowerShell-Installationsskript
+### Terminal-Profil
+- `install-terminal-profile.ps1` - Installiert das Claude Code Profil in Windows Terminal
+- `uninstall-terminal-profile.ps1` - Entfernt das Claude Code Profil
+- `claude-terminal-profile.json` - Profil-Konfiguration mit Claude Dark Theme
+
+### Kontextmenü
+- `install-context-menu.ps1` - PowerShell-Installationsskript (mit Windows Terminal Support)
 - `uninstall-context-menu.ps1` - PowerShell-Deinstallationsskript
-- `install-context-menu.reg` - Registry-Installationsdatei
+- `install-context-menu.reg` - Registry-Datei (PowerShell-Version)
+- `install-context-menu-wt.reg` - Registry-Datei (Windows Terminal-Version)
 - `uninstall-context-menu.reg` - Registry-Deinstallationsdatei
+
+### Dokumentation
 - `Kontext-menu.md` - Ausführliche Dokumentation zur Kontextmenü-Integration
 
 ## Deinstallation
+
+### Terminal-Profil entfernen
+```powershell
+.\uninstall-terminal-profile.ps1
+```
+
+### Kontextmenü entfernen
 
 **PowerShell:**
 ```powershell

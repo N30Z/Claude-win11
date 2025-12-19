@@ -1,0 +1,46 @@
+{
+    "profile": {
+        "name": "Claude Code",
+        "commandline": "powershell.exe -NoExit -Command \"claude\"",
+        "icon": "%USERPROFILE%\\.local\\bin\\claude.exe",
+        "startingDirectory": "%USERPROFILE%",
+        "colorScheme": "Claude Dark",
+        "font": {
+            "face": "Cascadia Code",
+            "size": 11,
+            "weight": "normal"
+        },
+        "cursorShape": "bar",
+        "cursorHeight": 25,
+        "padding": "12",
+        "scrollbarState": "visible",
+        "antialiasingMode": "cleartype",
+        "opacity": 95,
+        "useAcrylic": true,
+        "tabTitle": "Claude Code",
+        "suppressApplicationTitle": true
+    },
+    "scheme": {
+        "name": "Claude Dark",
+        "background": "#1a1a2e",
+        "foreground": "#e8e8e8",
+        "cursorColor": "#ff9f43",
+        "selectionBackground": "#3d3d5c",
+        "black": "#1a1a2e",
+        "red": "#ff6b6b",
+        "green": "#4ecca3",
+        "yellow": "#ff9f43",
+        "blue": "#7c5cff",
+        "purple": "#a55eea",
+        "cyan": "#48dbfb",
+        "white": "#e8e8e8",
+        "brightBlack": "#3d3d5c",
+        "brightRed": "#ff8787",
+        "brightGreen": "#6edfb8",
+        "brightYellow": "#ffb066",
+        "brightBlue": "#9d82ff",
+        "brightPurple": "#c07aff",
+        "brightCyan": "#72e4fc",
+        "brightWhite": "#ffffff"
+    }
+}

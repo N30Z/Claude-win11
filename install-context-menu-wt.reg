@@ -1,6 +1,7 @@
 Windows Registry Editor Version 5.00
 
-; Claude Code - Windows 11 Context Menu Integration (PowerShell Version)
+; Claude Code - Windows 11 Context Menu Integration (Windows Terminal Version)
+; Verwendet Windows Terminal mit dem Claude Code Profil
 ; Rechtsklick auf Ordner: "in Claude Code oeffnen"
 
 [HKEY_CLASSES_ROOT\Directory\shell\ClaudeCode]
@@ -8,7 +9,7 @@ Windows Registry Editor Version 5.00
 "Icon"="%USERPROFILE%\\.local\\bin\\claude.exe,0"
 
 [HKEY_CLASSES_ROOT\Directory\shell\ClaudeCode\command]
-@="powershell.exe -NoExit -Command \"cd \\\"%V\\\"; claude\""
+@="wt.exe -p \"Claude Code\" -d \"%V\" -- claude"
 
 ; Rechtsklick im Hintergrund: "Claude Code hier oeffnen"
 
@@ -17,4 +18,4 @@ Windows Registry Editor Version 5.00
 "Icon"="%USERPROFILE%\\.local\\bin\\claude.exe,0"
 
 [HKEY_CLASSES_ROOT\Directory\Background\shell\ClaudeCode\command]
-@="powershell.exe -NoExit -Command \"cd \\\"%V\\\"; claude\""
+@="wt.exe -p \"Claude Code\" -d \"%V\" -- claude"

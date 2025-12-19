@@ -1,30 +1,30 @@
 # Claude Code - Windows 11 Extensions
 
-Erweiterungen und Integrationen f\u00fcr Claude Code unter Windows 11.
+Erweiterungen und Integrationen für Claude Code unter Windows 11.
 
-## \u00dcbersicht
+## Übersicht
 
-Dieses Repository enth\u00e4lt n\u00fctzliche Windows 11 Integrationen f\u00fcr Claude Code, um Ihre Produktivit\u00e4t zu steigern.
+Dieses Repository enthält nützliche Windows 11 Integrationen für Claude Code, um Ihre Produktivität zu steigern.
 
 ## Features
 
-### \u2705 Kontextmen\u00fc-Integration
+### ✅ Kontextmenü-Integration
 
-F\u00fcgt Claude Code direkt in das Windows 11 Kontextmen\u00fc ein:
+Fügt Claude Code direkt in das Windows 11 Kontextmenü ein:
 
-- **Rechtsklick auf Ordner**: "in Claude Code \u00f6ffnen"
-- **Rechtsklick im Hintergrund**: "Claude Code hier \u00f6ffnen"
+- **Rechtsklick auf Ordner**: "in Claude Code öffnen"
+- **Rechtsklick im Hintergrund**: "Claude Code hier öffnen"
 
-\u00d6ffnet automatisch ein PowerShell-Fenster und startet Claude Code im ausgew\u00e4hlten Verzeichnis.
+Öffnet automatisch ein PowerShell-Fenster und startet Claude Code im ausgewählten Verzeichnis.
 
 ## Installation
 
-### Kontextmen\u00fc-Integration
+### Kontextmenü-Integration
 
 **Schnellinstallation (PowerShell):**
 
-1. \u00d6ffnen Sie PowerShell als Administrator
-2. F\u00fchren Sie aus:
+1. Öffnen Sie PowerShell als Administrator
+2. Führen Sie aus:
    ```powershell
    .\install-context-menu.ps1
    ```
@@ -32,7 +32,7 @@ F\u00fcgt Claude Code direkt in das Windows 11 Kontextmen\u00fc ein:
 **Alternative (Registry-Datei):**
 
 1. Doppelklicken Sie auf `install-context-menu.reg`
-2. Best\u00e4tigen Sie die Sicherheitsabfrage
+2. Bestätigen Sie die Sicherheitsabfrage
 
 **Detaillierte Anleitung**: Siehe [Kontext-menu.md](Kontext-menu.md)
 
@@ -40,7 +40,7 @@ F\u00fcgt Claude Code direkt in das Windows 11 Kontextmen\u00fc ein:
 
 - Windows 11 (oder Windows 10)
 - Claude Code installiert (via npm oder npx)
-- Administratorrechte f\u00fcr die Installation
+- Administratorrechte für die Installation
 
 ## Dateien
 
@@ -48,7 +48,7 @@ F\u00fcgt Claude Code direkt in das Windows 11 Kontextmen\u00fc ein:
 - `uninstall-context-menu.ps1` - PowerShell-Deinstallationsskript
 - `install-context-menu.reg` - Registry-Installationsdatei
 - `uninstall-context-menu.reg` - Registry-Deinstallationsdatei
-- `Kontext-menu.md` - Ausf\u00fchrliche Dokumentation zur Kontextmen\u00fc-Integration
+- `Kontext-menu.md` - Ausführliche Dokumentation zur Kontextmenü-Integration
 
 ## Deinstallation
 
@@ -62,37 +62,37 @@ Doppelklicken Sie auf `uninstall-context-menu.reg`
 
 ## Verwendung
 
-Nach der Installation k\u00f6nnen Sie:
+Nach der Installation können Sie:
 
 1. Im Windows Explorer zu einem beliebigen Ordner navigieren
-2. Rechtsklick auf einen Ordner \u2192 "in Claude Code \u00f6ffnen"
-3. Oder Rechtsklick im leeren Bereich \u2192 "Claude Code hier \u00f6ffnen"
+2. Rechtsklick auf einen Ordner → "in Claude Code öffnen"
+3. Oder Rechtsklick im leeren Bereich → "Claude Code hier öffnen"
 
-Claude Code startet automatisch im ausgew\u00e4hlten Verzeichnis.
+Claude Code startet automatisch im ausgewählten Verzeichnis.
 
 ## Anpassungen
 
-Sie k\u00f6nnen die Skripte und Registry-Dateien anpassen, um:
+Sie können die Skripte und Registry-Dateien anpassen, um:
 
 - Benutzerdefinierte Icons zu verwenden
-- Die Textbezeichnungen zu \u00e4ndern
+- Die Textbezeichnungen zu ändern
 - Den Claude Code-Befehl anzupassen
-- Zus\u00e4tzliche Parameter hinzuzuf\u00fcgen
+- Zusätzliche Parameter hinzuzufügen
 
 Details finden Sie in [Kontext-menu.md](Kontext-menu.md)
 
-## Probleml\u00f6sung
+## Problemlösung
 
 Bei Problemen konsultieren Sie bitte die [Kontext-menu.md](Kontext-menu.md) Dokumentation oder erstellen Sie ein Issue.
 
 ## Lizenz
 
-Siehe [LICENSE](LICENSE) f\u00fcr Details.
+Siehe [LICENSE](LICENSE) für Details.
 
-## Beitr\u00e4ge
+## Beiträge
 
-Beitr\u00e4ge, Verbesserungsvorschl\u00e4ge und Bug-Reports sind willkommen!
+Beiträge, Verbesserungsvorschläge und Bug-Reports sind willkommen!
 
 ## Support
 
-F\u00fcr Fragen oder Probleme erstellen Sie bitte ein Issue im Repository.
+Für Fragen oder Probleme erstellen Sie bitte ein Issue im Repository.

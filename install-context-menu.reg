@@ -1,19 +1,19 @@
 Windows Registry Editor Version 5.00
 
 ; Claude Code - Windows 11 Context Menu Integration
-; Rechtsklick auf Ordner: "in Claude Code \u00f6ffnen"
+; Rechtsklick auf Ordner: "in Claude Code öffnen"
 
 [HKEY_CLASSES_ROOT\Directory\shell\ClaudeCode]
-@="in Claude Code \u00f6ffnen"
+@="in Claude Code öffnen"
 "Icon"="powershell.exe,0"
 
 [HKEY_CLASSES_ROOT\Directory\shell\ClaudeCode\command]
 @="powershell.exe -NoExit -Command \"cd \\\"%V\\\"; npx @claude/code\""
 
-; Rechtsklick im Hintergrund: "Claude Code hier \u00f6ffnen"
+; Rechtsklick im Hintergrund: "Claude Code hier öffnen"
 
 [HKEY_CLASSES_ROOT\Directory\Background\shell\ClaudeCode]
-@="Claude Code hier \u00f6ffnen"
+@="Claude Code hier öffnen"
 "Icon"="powershell.exe,0"
 
 [HKEY_CLASSES_ROOT\Directory\Background\shell\ClaudeCode\command]

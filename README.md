@@ -1,138 +1,429 @@
-# Claude Code - Windows 11 Extensions
+# Claude Code - Windows 11 Integration
 
-Erweiterungen und Integrationen für Claude Code unter Windows 11.
+**Produktive Windows 11 Integration für Claude Code**
 
-## Übersicht
+Verwandeln Sie Claude Code in ein natives Windows 11 Tool mit Explorer-Integration, URL-Protokoll, Shortcuts und System-Diagnostik.
 
-Dieses Repository enthält nützliche Windows 11 Integrationen für Claude Code, um Ihre Produktivität zu steigern.
+---
 
 ## Features
 
-### ✅ Kontextmenü-Integration
+### ✅ Explorer-Kontextmenü
 
-Fügt Claude Code direkt in das Windows 11 Kontextmenü ein:
+**Ordner:**
+- Hier öffnen
+- Analysieren
+- Commit Message generieren
+- Tests ausführen
 
-- **Rechtsklick auf Ordner**: "in Claude Code öffnen"
-- **Rechtsklick im Hintergrund**: "Claude Code hier öffnen"
+**Dateien (Single & Multi-Select):**
+- Mit Claude öffnen
+- Analysieren
 
-Öffnet automatisch ein Terminal-Fenster und startet Claude Code im ausgewählten Verzeichnis.
+**Hintergrund:**
+- Hier öffnen
+- Commit Message generieren
+- Tests ausführen
 
-### ✅ Einzigartiges Claude Code Fenster (NEU)
+**Details:**
+- Automatische Projekt-Root-Erkennung (.git)
+- Leerzeichen in Pfaden werden korrekt behandelt
+- Multi-Select für mehrere Dateien gleichzeitig
+- Intelligente Test-Framework-Erkennung (npm, pytest, dotnet, cargo)
 
-Ein speziell gestaltetes Terminal-Profil für Claude Code mit:
+### ✅ Windows Terminal Profil
 
-- **Claude Dark Theme**: Dunkler Hintergrund mit lila/orange Akzenten
-- **Angepasste Schriftart**: Cascadia Code für optimale Lesbarkeit
-- **Acryl-Transparenz**: Modernes Windows 11 Design
-- **Claude Icon**: Eigenes Icon in der Titelleiste und Taskleiste
-- **Dediziertes Profil**: Separates Windows Terminal-Profil für Claude Code
+Ein dediziertes Claude Code Profil mit:
+- **Claude Dark Theme** (dunkler Hintergrund, lila/orange Akzente)
+- **Claude Icon** in Titelleiste und Taskleiste
+- **Cascadia Code Schriftart** für optimale Lesbarkeit
+- **Acryl-Transparenz** für modernes Windows 11 Design
 
-![Claude Dark Theme](https://img.shields.io/badge/Theme-Claude%20Dark-1a1a2e?style=flat&labelColor=7c5cff)
+### ✅ URL Protocol
+
+Starten Sie Claude Code von überall via `claude://` URLs:
+
+```
+claude://open?path=C:\Users\Username\Projects\MyProject
+claude://file?path=C:\path\to\file.txt
+claude://analyze?path=C:\path\to\folder
+claude://commit?path=C:\path\to\repo
+claude://test?path=C:\path\to\project
+```
+
+**Verwendung:**
+- Im Browser oder Windows-Ausführen-Dialog
+- In HTML-Links: `<a href="claude://open?path=...">Open in Claude</a>`
+- Per PowerShell: `Start-Process 'claude://open?path=...'`
+
+### ✅ Startmenü-Shortcuts
+
+- **Claude Code** - Startet Claude Code in Windows Terminal
+- **Claude Doctor** - System-Diagnose und Reparatur
+- **Claude Code (Letztes Projekt)** - Öffnet Ihr bevorzugtes Projekt
+
+### ✅ System-Diagnostik (Claude Doctor)
+
+Automatische Überprüfung und Reparatur:
+
+**Prüfungen:**
+- Claude Command verfügbar (PATH, Aufrufbarkeit)
+- Git Installation (inkl. korrekter Bash: `Git\bin\bash.exe`)
+- Windows Terminal Installation
+- Claude Terminal-Profil
+- Node.js (optional)
+- WSL (optional)
+- PowerShell ExecutionPolicy
+
+**Verhalten:**
+- Klare Status-Ausgabe: `OK` / `WARN` / `FIXED` / `FAIL`
+- Automatische Reparatur einfacher Probleme
+- Keine interaktive Abfrage
+- Exit-Codes für Automation
+
+---
 
 ## Installation
 
-### 1. Einzigartiges Claude Code Fenster (Empfohlen)
+### Schnell-Installation (Alles auf einmal)
 
-Installieren Sie zuerst das Windows Terminal-Profil für das beste Erlebnis:
+**Als Administrator PowerShell öffnen:**
 
 ```powershell
-.\install-terminal-profile.ps1
+.\install-all.ps1
 ```
 
-Dies fügt ein "Claude Code" Profil mit dem Claude Dark Theme zu Windows Terminal hinzu.
+Das Skript installiert automatisch:
+1. Windows Terminal Profil (falls Windows Terminal vorhanden)
+2. Explorer-Kontextmenü (Ordner, Dateien, Hintergrund)
+3. URL Protocol (`claude://`)
+4. Startmenü-Shortcuts
 
-### 2. Kontextmenü-Integration
+Nach der Installation:
+1. Explorer neu starten (oder `explorer.exe` beenden)
+2. Windows-Taste drücken → "Claude" eingeben
+3. Testen: Rechtsklick auf Ordner → Claude Code
 
-**Schnellinstallation (PowerShell):**
+---
 
-1. Öffnen Sie PowerShell als Administrator
-2. Führen Sie aus:
-   ```powershell
-   .\install-context-menu.ps1
-   ```
-3. Wählen Sie "Windows Terminal" wenn das Profil installiert ist
+### Modulare Installation (Einzelne Komponenten)
 
-**Alternative (Registry-Dateien):**
+#### 1. Diagnostics (empfohlen zuerst)
 
-- `install-context-menu-wt.reg` - Für Windows Terminal (empfohlen)
-- `install-context-menu.reg` - Für klassisches PowerShell
+```powershell
+.\scripts\diagnostics\claude-doctor.ps1 -Verbose
+```
 
-**Detaillierte Anleitung**: Siehe [Kontext-menu.md](Kontext-menu.md)
+Prüft das System und behebt Probleme automatisch.
 
-## Voraussetzungen
+#### 2. Windows Terminal Profil
 
-- Windows 11 (oder Windows 10)
-- Claude Code installiert (via npm oder npx)
-- Windows Terminal (empfohlen, für das einzigartige Claude Code Fenster)
-- Administratorrechte für die Kontextmenü-Installation
+```powershell
+.\scripts\terminal\install-terminal-profile.ps1
+```
 
-## Dateien
+#### 3. Explorer-Kontextmenü
 
-### Terminal-Profil
-- `install-terminal-profile.ps1` - Installiert das Claude Code Profil in Windows Terminal
-- `uninstall-terminal-profile.ps1` - Entfernt das Claude Code Profil
-- `claude-terminal-profile.json` - Profil-Konfiguration mit Claude Dark Theme
+```powershell
+# Als Administrator
+.\scripts\registry\install-context-menu-extended.ps1
+```
 
-### Kontextmenü
-- `install-context-menu.ps1` - PowerShell-Installationsskript (mit Windows Terminal Support)
-- `uninstall-context-menu.ps1` - PowerShell-Deinstallationsskript
-- `install-context-menu.reg` - Registry-Datei (PowerShell-Version)
-- `install-context-menu-wt.reg` - Registry-Datei (Windows Terminal-Version)
-- `uninstall-context-menu.reg` - Registry-Deinstallationsdatei
+#### 4. URL Protocol
 
-### Dokumentation
-- `Kontext-menu.md` - Ausführliche Dokumentation zur Kontextmenü-Integration
+```powershell
+# Als Administrator
+.\scripts\url-protocol\install-url-protocol.ps1
+```
+
+#### 5. Startmenü-Shortcuts
+
+```powershell
+.\scripts\shortcuts\install-shortcuts.ps1
+```
+
+---
 
 ## Deinstallation
 
-### Terminal-Profil entfernen
+### Komplett-Deinstallation
+
 ```powershell
-.\uninstall-terminal-profile.ps1
+# Als Administrator
+.\uninstall-all.ps1
 ```
 
-### Kontextmenü entfernen
+### Einzelne Komponenten
 
-**PowerShell:**
 ```powershell
-.\uninstall-context-menu.ps1
+# Context Menu
+.\scripts\registry\uninstall-context-menu-extended.ps1
+
+# URL Protocol
+.\scripts\url-protocol\uninstall-url-protocol.ps1
+
+# Shortcuts
+.\scripts\shortcuts\uninstall-shortcuts.ps1
+
+# Terminal Profile
+.\scripts\terminal\uninstall-terminal-profile.ps1
 ```
 
-**Registry:**
-Doppelklicken Sie auf `uninstall-context-menu.reg`
+---
+
+## Repository-Struktur
+
+```
+Claude-win11/
+│
+├── install-all.ps1              # Haupt-Installationsskript
+├── uninstall-all.ps1            # Haupt-Deinstallationsskript
+├── README.md
+├── LICENSE
+│
+└── scripts/
+    │
+    ├── diagnostics/
+    │   └── claude-doctor.ps1    # System-Diagnose und Reparatur
+    │
+    ├── wrappers/
+    │   ├── claude-open.ps1      # Öffnet Claude Code
+    │   ├── claude-analyze.ps1   # Analysiert Dateien/Ordner
+    │   ├── claude-commit.ps1    # Generiert Commit Messages
+    │   └── claude-test.ps1      # Führt Tests aus
+    │
+    ├── registry/
+    │   ├── install-context-menu-extended.ps1
+    │   ├── uninstall-context-menu-extended.ps1
+    │   └── legacy/              # Alte Registry-Dateien
+    │
+    ├── url-protocol/
+    │   ├── claude-url-handler.ps1
+    │   ├── install-url-protocol.ps1
+    │   └── uninstall-url-protocol.ps1
+    │
+    ├── shortcuts/
+    │   ├── install-shortcuts.ps1
+    │   └── uninstall-shortcuts.ps1
+    │
+    ├── terminal/
+    │   ├── install-terminal-profile.ps1
+    │   ├── uninstall-terminal-profile.ps1
+    │   └── claude-terminal-profile.json
+    │
+    └── install/
+        └── legacy/              # Alte Installationsskripte
+```
+
+---
+
+## Voraussetzungen
+
+**Erforderlich:**
+- Windows 11 (oder Windows 10)
+- Claude Code installiert
+- Administratorrechte (für Registry-Änderungen)
+
+**Empfohlen:**
+- Windows Terminal (für bestes Erlebnis)
+- Git (für Commit-Message-Generierung)
+- Node.js, Python, oder .NET (für Test-Runner)
+
+---
 
 ## Verwendung
 
-Nach der Installation können Sie:
+### Explorer-Kontextmenü
 
-1. Im Windows Explorer zu einem beliebigen Ordner navigieren
-2. Rechtsklick auf einen Ordner → "in Claude Code öffnen"
-3. Oder Rechtsklick im leeren Bereich → "Claude Code hier öffnen"
+**Ordner:**
+1. Rechtsklick auf Ordner → "Claude Code"
+2. Wählen Sie: Öffnen, Analysieren, Commit, Tests
 
-Claude Code startet automatisch im ausgewählten Verzeichnis.
+**Dateien:**
+1. Datei(en) auswählen
+2. Rechtsklick → "Claude Code"
+3. Wählen Sie: Öffnen, Analysieren
 
-## Anpassungen
+**Hintergrund:**
+1. In leerem Bereich rechtsklicken
+2. "Claude Code" → gewünschte Aktion
 
-Sie können die Skripte und Registry-Dateien anpassen, um:
+### URL Protocol
 
-- Benutzerdefinierte Icons zu verwenden
-- Die Textbezeichnungen zu ändern
-- Den Claude Code-Befehl anzupassen
-- Zusätzliche Parameter hinzuzufügen
+**Browser/Ausführen-Dialog:**
+```
+claude://open?path=C:\Projects\MyApp
+```
 
-Details finden Sie in [Kontext-menu.md](Kontext-menu.md)
+**HTML:**
+```html
+<a href="claude://analyze?path=C:\src\components">Analyze Components</a>
+```
+
+**PowerShell:**
+```powershell
+Start-Process "claude://commit?path=$(Get-Location)"
+```
+
+### Startmenü
+
+Windows-Taste drücken → "Claude" eingeben → Auswählen:
+- Claude Code
+- Claude Doctor
+- Claude Code (Letztes Projekt)
+
+---
 
 ## Problemlösung
 
-Bei Problemen konsultieren Sie bitte die [Kontext-menu.md](Kontext-menu.md) Dokumentation oder erstellen Sie ein Issue.
+### Explorer-Menü erscheint nicht
 
-## Lizenz
+1. Explorer neu starten:
+   ```powershell
+   taskkill /F /IM explorer.exe
+   start explorer.exe
+   ```
 
-Siehe [LICENSE](LICENSE) für Details.
+2. Registry prüfen:
+   ```powershell
+   # Als Administrator
+   .\scripts\registry\install-context-menu-extended.ps1
+   ```
+
+### Claude Doctor verwenden
+
+```powershell
+.\scripts\diagnostics\claude-doctor.ps1 -Verbose
+```
+
+Zeigt detaillierte Informationen über:
+- Claude Installation und PATH
+- Git und Bash-Pfad
+- Windows Terminal Status
+- Fehlende Komponenten
+
+### Häufige Probleme
+
+**"Claude nicht gefunden":**
+- Claude Doctor ausführen
+- Prüfen: `claude --version` in PowerShell
+- PATH-Variable überprüfen
+
+**"Git Bash falsch":**
+- Claude Doctor zeigt korrekten Pfad an
+- Verwenden Sie `Git\bin\bash.exe`, nicht `git-bash.exe`
+
+**"Leerzeichen in Pfaden":**
+- Alle Wrapper-Skripte behandeln Leerzeichen korrekt
+- Bei Problemen: Issue erstellen
+
+---
+
+## Windows-Eigenheiten (Pragmatisch)
+
+### Registry-Fragilitäten
+
+**Problem:** Windows Registry ist fragil und inkonsistent.
+
+**Lösung:**
+- Installations-Skripte prüfen vorher bestehende Einträge
+- Deinstallation entfernt sauber alle Spuren
+- Backup wird automatisch erstellt
+
+### Pfad-Handling
+
+**Problem:** Windows verwendet Backslashes, URLs Slashes, PowerShell escaped beides.
+
+**Lösung:**
+- Alle Wrapper normalisieren Pfade automatisch
+- Quote-Handling ist robust implementiert
+- Multi-Select funktioniert auch mit Leerzeichen
+
+### Bash-Pfad-Chaos
+
+**Problem:** Git installiert mehrere Bash-Varianten:
+- `git-bash.exe` (GUI-Wrapper, problematisch)
+- `Git\bin\bash.exe` (korrekt)
+- `Git\usr\bin\bash.exe` (MSYS2, auch ok)
+
+**Lösung:**
+- Claude Doctor findet und empfiehlt korrekten Pfad
+- Verwendet explizit `Git\bin\bash.exe`
+
+---
+
+## Erweiterbarkeit
+
+### Eigene Kontextmenü-Aktion hinzufügen
+
+1. Wrapper-Skript erstellen:
+   ```powershell
+   # scripts/wrappers/claude-custom.ps1
+   param([string]$Path)
+   # Ihre Logik hier
+   ```
+
+2. Registry-Eintrag hinzufügen in:
+   `scripts/registry/install-context-menu-extended.ps1`
+
+3. Neu installieren:
+   ```powershell
+   .\scripts\registry\install-context-menu-extended.ps1
+   ```
+
+### Eigenes URL-Action hinzufügen
+
+Erweitern Sie `scripts/url-protocol/claude-url-handler.ps1`:
+
+```powershell
+switch ($action.ToLower()) {
+    # ...
+    "custom" {
+        $wrapper = Join-Path $wrappersPath "claude-custom.ps1"
+        & powershell.exe -ExecutionPolicy Bypass -File $wrapper -Path $path
+    }
+}
+```
+
+---
 
 ## Beiträge
 
-Beiträge, Verbesserungsvorschläge und Bug-Reports sind willkommen!
+Beiträge sind willkommen!
+
+**Fokus:**
+- Zuverlässigkeit vor Features
+- Pragmatische Lösungen für Windows-Probleme
+- Saubere Fehlerbehandlung
+- Keine Marketing-Floskeln
+
+**Workflow:**
+1. Issue erstellen
+2. Fork & Branch
+3. Pull Request
+
+---
+
+## Lizenz
+
+Siehe [LICENSE](LICENSE).
+
+---
 
 ## Support
 
-Für Fragen oder Probleme erstellen Sie bitte ein Issue im Repository.
+**Problem?**
+1. Claude Doctor ausführen: `.\scripts\diagnostics\claude-doctor.ps1 -Verbose`
+2. Issue erstellen mit Output von Claude Doctor
+3. Genaue Fehlermeldung und Windows-Version angeben
+
+**Feature-Request?**
+Issue erstellen mit:
+- Beschreibung
+- Use-Case
+- Warum es wichtig ist
+
+---
+
+**Hinweis:** Dieses Repository ist unabhängig und nicht offiziell von Anthropic/Claude.
+Es löst echte Workflow-Probleme unter Windows 11 - ohne Schnickschnack.

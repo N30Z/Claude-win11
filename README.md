@@ -93,7 +93,10 @@ Automatische Überprüfung und Reparatur:
 .\install-all.ps1
 ```
 
-Das Skript installiert automatisch:
+Das Skript führt automatisch folgende Schritte aus:
+0. **Claude CLI Installations-Prüfung** - Prüft, ob Claude CLI installiert ist
+   - Falls nicht installiert: Fragt nach Installation via npm
+   - Falls installiert aber nicht im PATH: Fügt automatisch zum PATH hinzu
 1. Windows Terminal Profil (falls Windows Terminal vorhanden)
 2. Explorer-Kontextmenü (Ordner, Dateien, Hintergrund)
 3. URL Protocol (`claude://`)
@@ -221,8 +224,11 @@ Claude-win11/
 
 **Erforderlich:**
 - Windows 11 (oder Windows 10)
-- Claude Code installiert
 - Administratorrechte (für Registry-Änderungen)
+
+**Automatisch installiert (falls nicht vorhanden):**
+- Claude Code CLI - wird bei der Installation automatisch angeboten
+  - Benötigt Node.js und npm für die Installation
 
 **Empfohlen:**
 - Windows Terminal (für bestes Erlebnis)

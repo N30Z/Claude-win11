@@ -18,6 +18,163 @@ Write-Host ""
 $repoRoot = $PSScriptRoot
 
 # ============================================================================
+# STEP 0: CHECK CLAUDE CLI INSTALLATION
+# ============================================================================
+
+Write-Host "[0/5] Claude CLI Installations-Pruefung..." -ForegroundColor Yellow
+Write-Host ""
+
+# Check if claude command is available
+$claudeCmd = Get-Command claude -ErrorAction SilentlyContinue
+
+if (-not $claudeCmd) {
+    Write-Host "Claude CLI wurde nicht gefunden!" -ForegroundColor Red
+    Write-Host ""
+
+    # Check common installation locations
+    $commonPaths = @(
+        "$env:USERPROFILE\.local\bin\claude.exe",
+        "$env:LOCALAPPDATA\Programs\Claude\claude.exe",
+        "$env:ProgramFiles\Claude\claude.exe",
+        "$env:ProgramFiles(x86)\Claude\claude.exe"
+    )
+
+    $foundPath = $null
+    foreach ($path in $commonPaths) {
+        if (Test-Path $path) {
+            $foundPath = $path
+            break
+        }
+    }
+
+    if ($foundPath) {
+        Write-Host "Claude CLI gefunden in: $foundPath" -ForegroundColor Yellow
+        Write-Host "Aber nicht im PATH verfuegbar." -ForegroundColor Yellow
+        Write-Host ""
+
+        # Try to add to PATH
+        $dirPath = Split-Path $foundPath -Parent
+        $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+
+        if ($currentPath -notlike "*$dirPath*") {
+            Write-Host "Fuege Claude CLI zum PATH hinzu..." -ForegroundColor Cyan
+            try {
+                [Environment]::SetEnvironmentVariable("Path", "$currentPath;$dirPath", "User")
+                Write-Host "Claude CLI wurde zum PATH hinzugefuegt." -ForegroundColor Green
+                Write-Host "WICHTIG: Bitte starten Sie PowerShell neu, damit die Aenderungen wirksam werden." -ForegroundColor Yellow
+                Write-Host ""
+            } catch {
+                Write-Host "Fehler beim Hinzufuegen zum PATH: $_" -ForegroundColor Red
+                Write-Host ""
+            }
+        }
+    } else {
+        Write-Host "Moechten Sie Claude CLI jetzt installieren? (J/N)" -ForegroundColor Cyan
+        $response = Read-Host "Antwort"
+
+        if ($response -match '^[Jj]') {
+            Write-Host ""
+            Write-Host "Installiere Claude CLI..." -ForegroundColor Cyan
+            Write-Host ""
+
+            # Check if npm is available
+            $npmCmd = Get-Command npm -ErrorAction SilentlyContinue
+
+            if ($npmCmd) {
+                Write-Host "Verwende npm zur Installation..." -ForegroundColor Gray
+                try {
+                    # Install Claude CLI globally via npm
+                    $installResult = npm install -g @anthropics/claude-code 2>&1
+
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Host ""
+                        Write-Host "Claude CLI wurde erfolgreich installiert!" -ForegroundColor Green
+                        Write-Host ""
+
+                        # Refresh PATH for current session
+                        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+                        # Verify installation
+                        $claudeCmd = Get-Command claude -ErrorAction SilentlyContinue
+                        if ($claudeCmd) {
+                            Write-Host "Verifizierung erfolgreich: Claude CLI ist jetzt verfuegbar." -ForegroundColor Green
+                            try {
+                                $version = & claude --version 2>&1 | Select-Object -First 1
+                                Write-Host "Version: $version" -ForegroundColor Gray
+                            } catch {}
+                        } else {
+                            Write-Host "Installation abgeschlossen, aber 'claude' ist noch nicht im PATH." -ForegroundColor Yellow
+                            Write-Host "Bitte starten Sie PowerShell neu und fuehren Sie dieses Skript erneut aus." -ForegroundColor Yellow
+                        }
+                    } else {
+                        Write-Host ""
+                        Write-Host "Fehler bei der Installation von Claude CLI:" -ForegroundColor Red
+                        Write-Host $installResult -ForegroundColor Gray
+                        Write-Host ""
+                        Write-Host "Bitte installieren Sie Claude CLI manuell:" -ForegroundColor Yellow
+                        Write-Host "  npm install -g @anthropics/claude-code" -ForegroundColor Gray
+                        Write-Host "oder besuchen Sie: https://github.com/anthropics/claude-code" -ForegroundColor Gray
+                        Write-Host ""
+                        pause
+                        exit 1
+                    }
+                } catch {
+                    Write-Host ""
+                    Write-Host "Fehler bei der Installation: $_" -ForegroundColor Red
+                    Write-Host ""
+                    Write-Host "Bitte installieren Sie Claude CLI manuell:" -ForegroundColor Yellow
+                    Write-Host "  npm install -g @anthropics/claude-code" -ForegroundColor Gray
+                    Write-Host ""
+                    pause
+                    exit 1
+                }
+            } else {
+                Write-Host "npm wurde nicht gefunden!" -ForegroundColor Red
+                Write-Host ""
+                Write-Host "Claude CLI benoetigt Node.js und npm zur Installation." -ForegroundColor Yellow
+                Write-Host ""
+                Write-Host "Bitte installieren Sie Node.js von: https://nodejs.org" -ForegroundColor Cyan
+                Write-Host "Danach fuehren Sie aus: npm install -g @anthropics/claude-code" -ForegroundColor Gray
+                Write-Host ""
+                Write-Host "Alternativ besuchen Sie:" -ForegroundColor Yellow
+                Write-Host "  https://github.com/anthropics/claude-code" -ForegroundColor Gray
+                Write-Host ""
+                pause
+                exit 1
+            }
+        } else {
+            Write-Host ""
+            Write-Host "Installation abgebrochen." -ForegroundColor Yellow
+            Write-Host ""
+            Write-Host "Claude CLI wird benoetigt fuer die Windows 11 Integration." -ForegroundColor Yellow
+            Write-Host "Bitte installieren Sie Claude CLI manuell und fuehren Sie dieses Skript erneut aus:" -ForegroundColor Cyan
+            Write-Host ""
+            Write-Host "Installation via npm:" -ForegroundColor White
+            Write-Host "  npm install -g @anthropics/claude-code" -ForegroundColor Gray
+            Write-Host ""
+            Write-Host "Weitere Informationen:" -ForegroundColor White
+            Write-Host "  https://github.com/anthropics/claude-code" -ForegroundColor Gray
+            Write-Host ""
+            pause
+            exit 1
+        }
+    }
+} else {
+    Write-Host "Claude CLI gefunden!" -ForegroundColor Green
+    try {
+        $version = & claude --version 2>&1 | Select-Object -First 1
+        Write-Host "Version: $version" -ForegroundColor Gray
+    } catch {
+        Write-Host "Claude CLI ist installiert." -ForegroundColor Gray
+    }
+}
+
+Write-Host ""
+Write-Host "Weiter mit System-Diagnose..." -ForegroundColor Gray
+Start-Sleep -Seconds 2
+Write-Host ""
+
+# ============================================================================
 # STEP 1: DIAGNOSTICS
 # ============================================================================
 

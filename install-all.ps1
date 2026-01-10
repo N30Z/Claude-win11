@@ -1,12 +1,24 @@
 # Claude Code - Windows 11 Integration - Complete Installation
 # Installs all components: Diagnostics, Context Menu, URL Protocol, Terminal Profile, Shortcuts
 
-# Require Administrator privileges
+# Check for Administrator privileges and auto-elevate if needed
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Warning "Dieses Skript muss als Administrator ausgefuehrt werden!"
-    Write-Host "Bitte starten Sie PowerShell als Administrator und fuehren Sie das Skript erneut aus."
-    pause
-    exit
+    Write-Host ""
+    Write-Host "Dieses Skript benoetigt Administrator-Rechte." -ForegroundColor Yellow
+    Write-Host "UAC-Dialog wird aufgerufen..." -ForegroundColor Cyan
+    Write-Host ""
+
+    # Re-launch the script with Administrator privileges
+    try {
+        Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+        exit
+    } catch {
+        Write-Error "Fehler beim Aufrufen von UAC: $_"
+        Write-Host ""
+        Write-Host "Bitte starten Sie PowerShell manuell als Administrator und fuehren Sie das Skript erneut aus." -ForegroundColor Yellow
+        pause
+        exit 1
+    }
 }
 
 Write-Host ""

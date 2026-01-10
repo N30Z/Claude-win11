@@ -87,11 +87,13 @@ Automatische Überprüfung und Reparatur:
 
 ### Schnell-Installation (Alles auf einmal)
 
-**Als Administrator PowerShell öffnen:**
+**PowerShell öffnen und ausführen:**
 
 ```powershell
 .\install-all.ps1
 ```
+
+> **Hinweis:** Das Skript fordert automatisch Administrator-Rechte via UAC an, falls nicht bereits als Administrator ausgeführt.
 
 Das Skript führt automatisch folgende Schritte aus:
 0. **Claude CLI Installations-Prüfung** - Prüft, ob Claude CLI installiert ist

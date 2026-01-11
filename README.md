@@ -4,6 +4,23 @@
 
 Verwandeln Sie Claude Code in ein natives Windows 11 Tool mit Explorer-Integration, URL-Protokoll, Shortcuts und System-Diagnostik.
 
+## ✨ Neueste Verbesserungen (v1.1)
+
+**🔧 PowerShell ExecutionPolicy Fehlerbehandlung:**
+- Automatische Erkennung wenn Scripts deaktiviert sind
+- Interaktive Behebung mit einem Klick
+- Klare Fehlermeldungen und alternative Lösungen
+
+**🔧 Administrator-Neustart behoben:**
+- Arbeitsverzeichnis bleibt erhalten beim Neustart
+- Robuste Argument-Übergabe
+- Bessere Fehlerbehandlung mit detaillierten Anweisungen
+
+**🔧 Claude Doctor Verbesserungen:**
+- Smart Administrator-Handling (optional)
+- Read-Only Modus für Diagnose ohne Reparaturen
+- Flexible ExecutionPolicy-Behandlung
+
 ---
 
 ## Features
@@ -78,8 +95,14 @@ Automatische Überprüfung und Reparatur:
 **Verhalten:**
 - Klare Status-Ausgabe: `OK` / `WARN` / `FIXED` / `FAIL`
 - Automatische Reparatur einfacher Probleme
-- Keine interaktive Abfrage
+- Intelligente ExecutionPolicy-Behandlung (Read-Only Modus verfügbar)
+- Optional als Administrator ausführbar für Reparaturen
 - Exit-Codes für Automation
+
+**Neue Features:**
+- Automatische ExecutionPolicy-Prüfung und -Behebung
+- Flexibler Read-Only Modus bei fehlenden Rechten
+- Smart Administrator-Neustart mit Parametererhalt
 
 ---
 
@@ -309,6 +332,19 @@ Zeigt detaillierte Informationen über:
 - Fehlende Komponenten
 
 ### Häufige Probleme
+
+**"PowerShell Scripts sind deaktiviert" (ExecutionPolicy Restricted):**
+- Symptom: `install-all.ps1` oder andere Scripts lassen sich nicht ausführen
+- **Lösung 1 (Automatisch):** Einfach `.\install-all.ps1` ausführen - das Script erkennt das Problem und bietet interaktive Behebung an
+- **Lösung 2 (Manuell):** `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
+- **Lösung 3 (Einmalig):** `powershell -ExecutionPolicy Bypass -File .\install-all.ps1`
+- Alle Installations-Scripts prüfen jetzt automatisch ExecutionPolicy und bieten Fixes an
+
+**"PowerShell startet nicht als Administrator neu":**
+- Problem wurde behoben in v1.1
+- Scripts verwenden jetzt `-WorkingDirectory` Parameter
+- Arbeitsverzeichnis bleibt beim Administrator-Neustart erhalten
+- Unterstützt Pfade mit Leerzeichen korrekt
 
 **"Claude nicht gefunden":**
 - Claude Doctor ausführen

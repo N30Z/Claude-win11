@@ -7,6 +7,133 @@ param(
     [switch]$NoFix
 )
 
+# ============================================================================
+# SCRIPT EXECUTION POLICY CHECK
+# ============================================================================
+
+# Check if script execution is allowed (early check)
+$execPolicy = Get-ExecutionPolicy -Scope CurrentUser
+
+if ($execPolicy -eq "Restricted" -or $execPolicy -eq "Undefined") {
+    Write-Host ""
+    Write-Host "=====================================================================" -ForegroundColor Red
+    Write-Host "   WARNUNG: PowerShell Script-Ausfuehrung ist deaktiviert!          " -ForegroundColor Red
+    Write-Host "=====================================================================" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Aktuelle ExecutionPolicy: $execPolicy" -ForegroundColor Yellow
+    Write-Host ""
+
+    if ($NoFix) {
+        Write-Host "HINWEIS: -NoFix Parameter erkannt, Diagnose wird fortgesetzt." -ForegroundColor Cyan
+        Write-Host "Automatische Reparaturen sind deaktiviert." -ForegroundColor Cyan
+        Write-Host ""
+    } else {
+        Write-Host "Soll die Execution Policy jetzt auf 'RemoteSigned' gesetzt werden?" -ForegroundColor Cyan
+        Write-Host "(Empfohlen - erlaubt lokale Scripts sicher)" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "Optionen:" -ForegroundColor White
+        Write-Host "  [J] Ja - ExecutionPolicy auf RemoteSigned setzen" -ForegroundColor Gray
+        Write-Host "  [R] Read-Only - Nur Diagnose ohne Reparaturen" -ForegroundColor Gray
+        Write-Host "  [N] Nein - Skript beenden" -ForegroundColor Gray
+        Write-Host ""
+        $response = Read-Host "Ihre Wahl (J/R/N)"
+
+        if ($response -match '^[Jj]') {
+            Write-Host ""
+            Write-Host "Aendere Execution Policy..." -ForegroundColor Cyan
+            try {
+                Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+                Write-Host "Execution Policy wurde erfolgreich auf 'RemoteSigned' gesetzt!" -ForegroundColor Green
+                Write-Host ""
+            } catch {
+                Write-Host ""
+                Write-Host "Fehler beim Aendern der Execution Policy: $_" -ForegroundColor Red
+                Write-Host ""
+                Write-Host "Weiter im Read-Only Modus (keine Reparaturen)..." -ForegroundColor Yellow
+                Write-Host ""
+                $NoFix = $true
+            }
+        } elseif ($response -match '^[Rr]') {
+            Write-Host ""
+            Write-Host "Read-Only Modus aktiviert - nur Diagnose, keine Reparaturen." -ForegroundColor Cyan
+            Write-Host ""
+            $NoFix = $true
+        } else {
+            Write-Host ""
+            Write-Host "Diagnose abgebrochen." -ForegroundColor Yellow
+            Write-Host ""
+            Write-Host "Um die Execution Policy manuell zu aendern:" -ForegroundColor Cyan
+            Write-Host "  Set-ExecutionPolicy RemoteSigned -Scope CurrentUser" -ForegroundColor Gray
+            Write-Host ""
+            exit 1
+        }
+    }
+}
+
+# ============================================================================
+# ADMINISTRATOR PRIVILEGES CHECK
+# ============================================================================
+
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+
+if (-not $isAdmin -and -not $NoFix) {
+    Write-Host ""
+    Write-Host "=====================================================================" -ForegroundColor Yellow
+    Write-Host "   HINWEIS: Nicht als Administrator ausgefuehrt                     " -ForegroundColor Yellow
+    Write-Host "=====================================================================" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Einige Reparaturen benoetigen Administrator-Rechte." -ForegroundColor White
+    Write-Host ""
+    Write-Host "Optionen:" -ForegroundColor Cyan
+    Write-Host "  [A] Als Administrator neu starten (empfohlen fuer Reparaturen)" -ForegroundColor Gray
+    Write-Host "  [R] Read-Only Modus (nur Diagnose, keine Reparaturen)" -ForegroundColor Gray
+    Write-Host "  [C] Fortfahren ohne Admin (eingeschraenkte Reparaturen)" -ForegroundColor Gray
+    Write-Host ""
+    $response = Read-Host "Ihre Wahl (A/R/C)"
+
+    if ($response -match '^[Aa]') {
+        Write-Host ""
+        Write-Host "Starte als Administrator neu..." -ForegroundColor Cyan
+        try {
+            $scriptPath = $PSCommandPath
+            $workingDir = $PSScriptRoot
+
+            # Build arguments with current parameters
+            $argList = @(
+                "-NoProfile"
+                "-ExecutionPolicy", "Bypass"
+                "-File", "`"$scriptPath`""
+            )
+
+            if ($Verbose) { $argList += "-Verbose" }
+            if ($NoColor) { $argList += "-NoColor" }
+
+            # Start elevated process
+            Start-Process -FilePath "powershell.exe" `
+                         -ArgumentList $argList `
+                         -WorkingDirectory $workingDir `
+                         -Verb RunAs `
+                         -Wait
+
+            exit
+        } catch {
+            Write-Host ""
+            Write-Host "Fehler beim Neustart: $_" -ForegroundColor Red
+            Write-Host "Fortfahren im eingeschraenkten Modus..." -ForegroundColor Yellow
+            Write-Host ""
+        }
+    } elseif ($response -match '^[Rr]') {
+        Write-Host ""
+        Write-Host "Read-Only Modus aktiviert." -ForegroundColor Cyan
+        Write-Host ""
+        $NoFix = $true
+    } else {
+        Write-Host ""
+        Write-Host "Fortfahren mit eingeschraenkten Reparaturmoeglichkeiten." -ForegroundColor Yellow
+        Write-Host ""
+    }
+}
+
 # Color output functions
 function Write-Status {
     param([string]$Message, [string]$Status)
@@ -330,15 +457,17 @@ if ($wslCmd) {
 # 7. Check PowerShell Execution Policy
 # ----------------------------------------------------------------------------
 
-$execPolicy = Get-ExecutionPolicy -Scope CurrentUser
+# Re-check ExecutionPolicy (may have been changed at script start)
+$currentExecPolicy = Get-ExecutionPolicy -Scope CurrentUser
 
-if ($execPolicy -eq "Restricted") {
-    Write-Status "PowerShell execution policy is Restricted" "WARN"
+if ($currentExecPolicy -eq "Restricted" -or $currentExecPolicy -eq "Undefined") {
+    Write-Status "PowerShell execution policy is $currentExecPolicy" "WARN"
     Write-Detail "This may prevent scripts from running"
+    Write-Detail "Policy should have been fixed at startup, but requires admin rights"
     Update-Stats "WARN"
 
-    if (-not $NoFix) {
-        Write-Detail "Attempting to fix..."
+    if (-not $NoFix -and $isAdmin) {
+        Write-Detail "Attempting to fix (Admin mode)..."
         try {
             Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
             Write-Status "Execution policy set to RemoteSigned" "FIXED"
@@ -350,7 +479,7 @@ if ($execPolicy -eq "Restricted") {
         }
     }
 } else {
-    Write-Status "PowerShell execution policy: $execPolicy" "OK"
+    Write-Status "PowerShell execution policy: $currentExecPolicy" "OK"
     Update-Stats "OK"
 }
 

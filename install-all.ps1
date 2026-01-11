@@ -1,3 +1,68 @@
+# ============================================================================
+# SCRIPT EXECUTION POLICY CHECK
+# ============================================================================
+
+# Check if script execution is allowed
+$execPolicy = Get-ExecutionPolicy -Scope CurrentUser
+
+if ($execPolicy -eq "Restricted" -or $execPolicy -eq "Undefined") {
+    Write-Host ""
+    Write-Host "=====================================================================" -ForegroundColor Red
+    Write-Host "   WARNUNG: PowerShell Script-Ausfuehrung ist deaktiviert!          " -ForegroundColor Red
+    Write-Host "=====================================================================" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Aktuelle ExecutionPolicy: $execPolicy" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Dieses Skript kann nicht ausgefuehrt werden, solange die" -ForegroundColor White
+    Write-Host "Execution Policy auf 'Restricted' oder 'Undefined' steht." -ForegroundColor White
+    Write-Host ""
+    Write-Host "Soll die Execution Policy jetzt auf 'RemoteSigned' gesetzt werden?" -ForegroundColor Cyan
+    Write-Host "(Empfohlen und sicher - erlaubt lokale Scripts)" -ForegroundColor Gray
+    Write-Host ""
+    $response = Read-Host "Execution Policy aendern? (J/N)"
+
+    if ($response -match '^[Jj]') {
+        Write-Host ""
+        Write-Host "Aendere Execution Policy..." -ForegroundColor Cyan
+        try {
+            Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+            Write-Host "Execution Policy wurde erfolgreich auf 'RemoteSigned' gesetzt!" -ForegroundColor Green
+            Write-Host ""
+            Write-Host "Bitte fuehren Sie dieses Skript erneut aus." -ForegroundColor Yellow
+            Write-Host ""
+            pause
+            exit 0
+        } catch {
+            Write-Host ""
+            Write-Host "Fehler beim Aendern der Execution Policy: $_" -ForegroundColor Red
+            Write-Host ""
+            Write-Host "Bitte fuehren Sie folgenden Befehl manuell als Administrator aus:" -ForegroundColor Yellow
+            Write-Host "  Set-ExecutionPolicy RemoteSigned -Scope CurrentUser" -ForegroundColor White
+            Write-Host ""
+            pause
+            exit 1
+        }
+    } else {
+        Write-Host ""
+        Write-Host "Installation abgebrochen." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Um dieses Skript auszufuehren, haben Sie folgende Optionen:" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "Option 1 - Execution Policy aendern (empfohlen):" -ForegroundColor White
+        Write-Host "  Set-ExecutionPolicy RemoteSigned -Scope CurrentUser" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "Option 2 - Einmalig mit Bypass ausfuehren:" -ForegroundColor White
+        Write-Host "  powershell -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -ForegroundColor Gray
+        Write-Host ""
+        pause
+        exit 1
+    }
+}
+
+# ============================================================================
+# ADMINISTRATOR PRIVILEGES CHECK
+# ============================================================================
+
 # Check for Administrator privileges and auto-elevate if needed
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
     Write-Host ""
@@ -7,12 +72,41 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
     # Re-launch the script with Administrator privileges
     try {
-        Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+        $scriptPath = $PSCommandPath
+        $workingDir = $PSScriptRoot
+
+        # Build arguments properly to handle paths with spaces
+        $arguments = @(
+            "-NoProfile"
+            "-ExecutionPolicy", "Bypass"
+            "-File", "`"$scriptPath`""
+        )
+
+        # Start new elevated process
+        $process = Start-Process -FilePath "powershell.exe" `
+                                  -ArgumentList $arguments `
+                                  -WorkingDirectory $workingDir `
+                                  -Verb RunAs `
+                                  -PassThru
+
+        # Exit current non-elevated process
         exit
     } catch {
-        Write-Error "Fehler beim Aufrufen von UAC: $_"
         Write-Host ""
-        Write-Host "Bitte starten Sie PowerShell manuell als Administrator und fuehren Sie das Skript erneut aus." -ForegroundColor Yellow
+        Write-Host "Fehler beim Aufrufen von UAC: $_" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Moegliche Ursachen:" -ForegroundColor Yellow
+        Write-Host "  - UAC wurde abgebrochen" -ForegroundColor Gray
+        Write-Host "  - Keine Berechtigung zum Erhoehen der Rechte" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "Bitte starten Sie PowerShell manuell als Administrator und" -ForegroundColor Yellow
+        Write-Host "fuehren Sie das Skript erneut aus:" -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "  1. Rechtsklick auf PowerShell" -ForegroundColor White
+        Write-Host "  2. 'Als Administrator ausfuehren' waehlen" -ForegroundColor White
+        Write-Host "  3. Zu diesem Ordner navigieren: $PSScriptRoot" -ForegroundColor White
+        Write-Host "  4. Skript ausfuehren: .\install-all.ps1" -ForegroundColor White
+        Write-Host ""
         pause
         exit 1
     }

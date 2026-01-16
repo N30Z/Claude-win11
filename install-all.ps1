@@ -1,424 +1,177 @@
-# ============================================================================
-# SCRIPT EXECUTION POLICY CHECK
-# ============================================================================
+# Claude Code - Windows 11 Integration - Quick Installer
+# One-liner: irm https://raw.githubusercontent.com/N30Z/Claude-win11/main/install-all.ps1 | iex
 
-# Check if script execution is allowed
-$execPolicy = Get-ExecutionPolicy -Scope CurrentUser
+#Requires -Version 5.1
 
-if ($execPolicy -eq "Restricted" -or $execPolicy -eq "Undefined") {
-    Write-Host ""
-    Write-Host "=====================================================================" -ForegroundColor Red
-    Write-Host "   WARNUNG: PowerShell Script-Ausfuehrung ist deaktiviert!          " -ForegroundColor Red
-    Write-Host "=====================================================================" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Aktuelle ExecutionPolicy: $execPolicy" -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "Dieses Skript kann nicht ausgefuehrt werden, solange die" -ForegroundColor White
-    Write-Host "Execution Policy auf 'Restricted' oder 'Undefined' steht." -ForegroundColor White
-    Write-Host ""
-    Write-Host "Soll die Execution Policy jetzt auf 'RemoteSigned' gesetzt werden?" -ForegroundColor Cyan
-    Write-Host "(Empfohlen und sicher - erlaubt lokale Scripts)" -ForegroundColor Gray
-    Write-Host ""
-    $response = Read-Host "Execution Policy aendern? (J/N)"
+param(
+    [string]$InstallPath = "$env:USERPROFILE\Claude-win11",
+    [switch]$SkipClone
+)
 
-    if ($response -match '^[Jj]') {
-        Write-Host ""
-        Write-Host "Aendere Execution Policy..." -ForegroundColor Cyan
-        try {
-            Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-            Write-Host "Execution Policy wurde erfolgreich auf 'RemoteSigned' gesetzt!" -ForegroundColor Green
-            Write-Host ""
-            Write-Host "Bitte fuehren Sie dieses Skript erneut aus." -ForegroundColor Yellow
-            Write-Host ""
-            pause
-            exit 0
-        } catch {
-            Write-Host ""
-            Write-Host "Fehler beim Aendern der Execution Policy: $_" -ForegroundColor Red
-            Write-Host ""
-            Write-Host "Bitte fuehren Sie folgenden Befehl manuell als Administrator aus:" -ForegroundColor Yellow
-            Write-Host "  Set-ExecutionPolicy RemoteSigned -Scope CurrentUser" -ForegroundColor White
-            Write-Host ""
-            pause
-            exit 1
-        }
-    } else {
-        Write-Host ""
-        Write-Host "Installation abgebrochen." -ForegroundColor Yellow
-        Write-Host ""
-        Write-Host "Um dieses Skript auszufuehren, haben Sie folgende Optionen:" -ForegroundColor Cyan
-        Write-Host ""
-        Write-Host "Option 1 - Execution Policy aendern (empfohlen):" -ForegroundColor White
-        Write-Host "  Set-ExecutionPolicy RemoteSigned -Scope CurrentUser" -ForegroundColor Gray
-        Write-Host ""
-        Write-Host "Option 2 - Einmalig mit Bypass ausfuehren:" -ForegroundColor White
-        Write-Host "  powershell -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -ForegroundColor Gray
-        Write-Host ""
-        pause
-        exit 1
-    }
-}
-
-# ============================================================================
-# ADMINISTRATOR PRIVILEGES CHECK
-# ============================================================================
-
-# Check for Administrator privileges and auto-elevate if needed
-if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Host ""
-    Write-Host "Dieses Skript benoetigt Administrator-Rechte." -ForegroundColor Yellow
-    Write-Host "UAC-Dialog wird aufgerufen..." -ForegroundColor Cyan
-    Write-Host ""
-
-    # Re-launch the script with Administrator privileges
-    try {
-        $scriptPath = $PSCommandPath
-        $workingDir = $PSScriptRoot
-
-        # Build arguments properly to handle paths with spaces
-        $arguments = @(
-            "-NoProfile"
-            "-ExecutionPolicy", "Bypass"
-            "-File", "`"$scriptPath`""
-        )
-
-        # Start new elevated process
-        $process = Start-Process -FilePath "powershell.exe" `
-                                  -ArgumentList $arguments `
-                                  -WorkingDirectory $workingDir `
-                                  -Verb RunAs `
-                                  -PassThru
-
-        # Exit current non-elevated process
-        exit
-    } catch {
-        Write-Host ""
-        Write-Host "Fehler beim Aufrufen von UAC: $_" -ForegroundColor Red
-        Write-Host ""
-        Write-Host "Moegliche Ursachen:" -ForegroundColor Yellow
-        Write-Host "  - UAC wurde abgebrochen" -ForegroundColor Gray
-        Write-Host "  - Keine Berechtigung zum Erhoehen der Rechte" -ForegroundColor Gray
-        Write-Host ""
-        Write-Host "Bitte starten Sie PowerShell manuell als Administrator und" -ForegroundColor Yellow
-        Write-Host "fuehren Sie das Skript erneut aus:" -ForegroundColor Yellow
-        Write-Host ""
-        Write-Host "  1. Rechtsklick auf PowerShell" -ForegroundColor White
-        Write-Host "  2. 'Als Administrator ausfuehren' waehlen" -ForegroundColor White
-        Write-Host "  3. Zu diesem Ordner navigieren: $PSScriptRoot" -ForegroundColor White
-        Write-Host "  4. Skript ausfuehren: .\install-all.ps1" -ForegroundColor White
-        Write-Host ""
-        pause
-        exit 1
-    }
-}
+$ErrorActionPreference = "Stop"
 
 Write-Host ""
 Write-Host "=====================================================================" -ForegroundColor Cyan
-Write-Host "       Claude Code - Windows 11 Integration Installation            " -ForegroundColor Cyan
+Write-Host "       Claude Code - Windows 11 Integration - Quick Install        " -ForegroundColor Cyan
 Write-Host "=====================================================================" -ForegroundColor Cyan
 Write-Host ""
 
-$repoRoot = $PSScriptRoot
-
 # ============================================================================
-# STEP 0: CHECK CLAUDE CLI INSTALLATION
+# CHECK GIT
 # ============================================================================
 
-Write-Host "[0/5] Claude CLI Installations-Pruefung..." -ForegroundColor Yellow
+Write-Host "Checking prerequisites..." -ForegroundColor Yellow
 Write-Host ""
 
-# Check if claude command is available
-$claudeCmd = Get-Command claude -ErrorAction SilentlyContinue
+$gitCmd = Get-Command git -ErrorAction SilentlyContinue
 
-if (-not $claudeCmd) {
-    Write-Host "Claude CLI wurde nicht gefunden!" -ForegroundColor Red
+if (-not $gitCmd) {
+    Write-Host "Git not found!" -ForegroundColor Red
     Write-Host ""
+    Write-Host "Git is required to download the repository." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Please install Git from: https://git-scm.com/download/win" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "After installing Git, run this command again:" -ForegroundColor White
+    Write-Host "  irm https://raw.githubusercontent.com/N30Z/Claude-win11/main/install-all.ps1 | iex" -ForegroundColor Gray
+    Write-Host ""
+    exit 1
+}
 
-    # Check common installation locations
-    $commonPaths = @(
-        "$env:USERPROFILE\.local\bin\claude.exe",
-        "$env:LOCALAPPDATA\Programs\Claude\claude.exe",
-        "$env:ProgramFiles\Claude\claude.exe",
-        "$env:ProgramFiles(x86)\Claude\claude.exe"
-    )
+Write-Host "Git found: $($gitCmd.Source)" -ForegroundColor Green
+Write-Host ""
 
-    $foundPath = $null
-    foreach ($path in $commonPaths) {
-        if (Test-Path $path) {
-            $foundPath = $path
-            break
-        }
-    }
+# ============================================================================
+# CLONE OR UPDATE REPOSITORY
+# ============================================================================
 
-    if ($foundPath) {
-        Write-Host "Claude CLI gefunden in: $foundPath" -ForegroundColor Yellow
-        Write-Host "Aber nicht im PATH verfuegbar." -ForegroundColor Yellow
+if (-not $SkipClone) {
+    if (Test-Path $InstallPath) {
+        Write-Host "Repository already exists at: $InstallPath" -ForegroundColor Yellow
         Write-Host ""
+        Write-Host "Options:" -ForegroundColor Cyan
+        Write-Host "  [U] Update - Pull latest changes (recommended)" -ForegroundColor White
+        Write-Host "  [R] Remove and re-clone - Fresh installation" -ForegroundColor White
+        Write-Host "  [C] Continue - Use existing installation" -ForegroundColor White
+        Write-Host "  [Q] Quit - Cancel installation" -ForegroundColor White
+        Write-Host ""
+        $response = Read-Host "Your choice (U/R/C/Q)"
 
-        # Try to add to PATH
-        $dirPath = Split-Path $foundPath -Parent
-        $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
-
-        if ($currentPath -notlike "*$dirPath*") {
-            Write-Host "Fuege Claude CLI zum PATH hinzu..." -ForegroundColor Cyan
+        if ($response -match '^[Uu]') {
+            Write-Host ""
+            Write-Host "Updating repository..." -ForegroundColor Cyan
             try {
-                [Environment]::SetEnvironmentVariable("Path", "$currentPath;$dirPath", "User")
-                Write-Host "Claude CLI wurde zum PATH hinzugefuegt." -ForegroundColor Green
-                Write-Host "WICHTIG: Bitte starten Sie PowerShell neu, damit die Aenderungen wirksam werden." -ForegroundColor Yellow
+                Push-Location $InstallPath
+                & git pull origin main
+                Pop-Location
+                Write-Host "Repository updated successfully!" -ForegroundColor Green
                 Write-Host ""
             } catch {
-                Write-Host "Fehler beim Hinzufuegen zum PATH: $_" -ForegroundColor Red
+                Pop-Location
+                Write-Host "Failed to update repository: $_" -ForegroundColor Red
+                Write-Host "Continuing with existing installation..." -ForegroundColor Yellow
                 Write-Host ""
             }
-        }
-    } else {
-        Write-Host "Moechten Sie Claude CLI jetzt installieren? (J/N)" -ForegroundColor Cyan
-        $response = Read-Host "Antwort"
-
-        if ($response -match '^[Jj]') {
+        } elseif ($response -match '^[Rr]') {
             Write-Host ""
-            Write-Host "Installiere Claude CLI..." -ForegroundColor Cyan
-            Write-Host ""
-
-            # Check if npm is available
-            $npmCmd = Get-Command npm -ErrorAction SilentlyContinue
-
-            if ($npmCmd) {
-                Write-Host "Verwende npm zur Installation..." -ForegroundColor Gray
-                try {
-                    # Install Claude CLI globally via npm
-                    $installResult = npm install -g @anthropics/claude-code 2>&1
-
-                    if ($LASTEXITCODE -eq 0) {
-                        Write-Host ""
-                        Write-Host "Claude CLI wurde erfolgreich installiert!" -ForegroundColor Green
-                        Write-Host ""
-
-                        # Refresh PATH for current session
-                        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-
-                        # Verify installation
-                        $claudeCmd = Get-Command claude -ErrorAction SilentlyContinue
-                        if ($claudeCmd) {
-                            Write-Host "Verifizierung erfolgreich: Claude CLI ist jetzt verfuegbar." -ForegroundColor Green
-                            try {
-                                $version = & claude --version 2>&1 | Select-Object -First 1
-                                Write-Host "Version: $version" -ForegroundColor Gray
-                            } catch {}
-                        } else {
-                            Write-Host "Installation abgeschlossen, aber 'claude' ist noch nicht im PATH." -ForegroundColor Yellow
-                            Write-Host "Bitte starten Sie PowerShell neu und fuehren Sie dieses Skript erneut aus." -ForegroundColor Yellow
-                        }
-                    } else {
-                        Write-Host ""
-                        Write-Host "Fehler bei der Installation von Claude CLI:" -ForegroundColor Red
-                        Write-Host $installResult -ForegroundColor Gray
-                        Write-Host ""
-                        Write-Host "Bitte installieren Sie Claude CLI manuell:" -ForegroundColor Yellow
-                        Write-Host "  npm install -g @anthropics/claude-code" -ForegroundColor Gray
-                        Write-Host "oder besuchen Sie: https://github.com/anthropics/claude-code" -ForegroundColor Gray
-                        Write-Host ""
-                        pause
-                        exit 1
-                    }
-                } catch {
-                    Write-Host ""
-                    Write-Host "Fehler bei der Installation: $_" -ForegroundColor Red
-                    Write-Host ""
-                    Write-Host "Bitte installieren Sie Claude CLI manuell:" -ForegroundColor Yellow
-                    Write-Host "  npm install -g @anthropics/claude-code" -ForegroundColor Gray
-                    Write-Host ""
-                    pause
-                    exit 1
-                }
-            } else {
-                Write-Host "npm wurde nicht gefunden!" -ForegroundColor Red
+            Write-Host "Removing existing installation..." -ForegroundColor Yellow
+            try {
+                Remove-Item -Path $InstallPath -Recurse -Force
+                Write-Host "Removed successfully!" -ForegroundColor Green
                 Write-Host ""
-                Write-Host "Claude CLI benoetigt Node.js und npm zur Installation." -ForegroundColor Yellow
+            } catch {
+                Write-Host "Failed to remove existing installation: $_" -ForegroundColor Red
                 Write-Host ""
-                Write-Host "Bitte installieren Sie Node.js von: https://nodejs.org" -ForegroundColor Cyan
-                Write-Host "Danach fuehren Sie aus: npm install -g @anthropics/claude-code" -ForegroundColor Gray
-                Write-Host ""
-                Write-Host "Alternativ besuchen Sie:" -ForegroundColor Yellow
-                Write-Host "  https://github.com/anthropics/claude-code" -ForegroundColor Gray
-                Write-Host ""
-                pause
                 exit 1
             }
+
+            Write-Host "Cloning repository..." -ForegroundColor Cyan
+            try {
+                & git clone https://github.com/N30Z/Claude-win11.git $InstallPath
+                Write-Host "Repository cloned successfully!" -ForegroundColor Green
+                Write-Host ""
+            } catch {
+                Write-Host "Failed to clone repository: $_" -ForegroundColor Red
+                Write-Host ""
+                exit 1
+            }
+        } elseif ($response -match '^[Cc]') {
+            Write-Host ""
+            Write-Host "Continuing with existing installation..." -ForegroundColor Cyan
+            Write-Host ""
         } else {
             Write-Host ""
-            Write-Host "Installation abgebrochen." -ForegroundColor Yellow
+            Write-Host "Installation cancelled." -ForegroundColor Yellow
             Write-Host ""
-            Write-Host "Claude CLI wird benoetigt fuer die Windows 11 Integration." -ForegroundColor Yellow
-            Write-Host "Bitte installieren Sie Claude CLI manuell und fuehren Sie dieses Skript erneut aus:" -ForegroundColor Cyan
+            exit 0
+        }
+    } else {
+        Write-Host "Cloning repository to: $InstallPath" -ForegroundColor Cyan
+        Write-Host ""
+        try {
+            & git clone https://github.com/N30Z/Claude-win11.git $InstallPath
             Write-Host ""
-            Write-Host "Installation via npm:" -ForegroundColor White
-            Write-Host "  npm install -g @anthropics/claude-code" -ForegroundColor Gray
+            Write-Host "Repository cloned successfully!" -ForegroundColor Green
             Write-Host ""
-            Write-Host "Weitere Informationen:" -ForegroundColor White
-            Write-Host "  https://github.com/anthropics/claude-code" -ForegroundColor Gray
+        } catch {
             Write-Host ""
-            pause
+            Write-Host "Failed to clone repository: $_" -ForegroundColor Red
+            Write-Host ""
+            Write-Host "Please check:" -ForegroundColor Yellow
+            Write-Host "  - Internet connection" -ForegroundColor White
+            Write-Host "  - Repository URL is correct" -ForegroundColor White
+            Write-Host "  - Git is properly configured" -ForegroundColor White
+            Write-Host ""
             exit 1
         }
     }
-} else {
-    Write-Host "Claude CLI gefunden!" -ForegroundColor Green
-    try {
-        $version = & claude --version 2>&1 | Select-Object -First 1
-        Write-Host "Version: $version" -ForegroundColor Gray
-    } catch {
-        Write-Host "Claude CLI ist installiert." -ForegroundColor Gray
-    }
 }
 
-Write-Host ""
-Write-Host "Weiter mit System-Diagnose..." -ForegroundColor Gray
-Start-Sleep -Seconds 2
-Write-Host ""
-
 # ============================================================================
-# STEP 1: DIAGNOSTICS
+# RUN MAIN INSTALLER
 # ============================================================================
 
-Write-Host "[1/5] System-Diagnose..." -ForegroundColor Yellow
+Write-Host "Starting main installation..." -ForegroundColor Yellow
 Write-Host ""
 
-$doctorScript = Join-Path $repoRoot "scripts\diagnostics\claude-doctor.ps1"
+$mainInstaller = Join-Path $InstallPath "install.ps1"
 
-if (Test-Path $doctorScript) {
-    & powershell.exe -ExecutionPolicy Bypass -File $doctorScript -NoColor
-
-    if ($LASTEXITCODE -eq 1) {
-        Write-Host ""
-        Write-Host "KRITISCHE FEHLER gefunden!" -ForegroundColor Red
-        Write-Host "Bitte beheben Sie die Fehler, bevor Sie fortfahren." -ForegroundColor Yellow
-        Write-Host ""
-        pause
-        exit 1
-    }
-} else {
-    Write-Host "Warning: Diagnostics script not found, skipping..." -ForegroundColor Yellow
+if (-not (Test-Path $mainInstaller)) {
+    Write-Host "Main installer not found: $mainInstaller" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "The repository may be corrupted. Please try:" -ForegroundColor Yellow
+    Write-Host "  Remove-Item -Path '$InstallPath' -Recurse -Force" -ForegroundColor White
+    Write-Host "  irm https://raw.githubusercontent.com/N30Z/Claude-win11/main/install-all.ps1 | iex" -ForegroundColor White
+    Write-Host ""
+    exit 1
 }
 
-Write-Host ""
-Read-Host "Druecken Sie Enter um fortzufahren"
-Write-Host ""
+# Execute main installer
+try {
+    Write-Host "Launching install.ps1..." -ForegroundColor Cyan
+    Write-Host "This will handle ExecutionPolicy and Administrator privileges automatically." -ForegroundColor Gray
+    Write-Host ""
+    Start-Sleep -Seconds 2
 
-# ============================================================================
-# STEP 2: WINDOWS TERMINAL PROFILE
-# ============================================================================
+    # Use call operator to run in current session
+    & powershell.exe -ExecutionPolicy Bypass -File $mainInstaller
 
-Write-Host "[2/5] Windows Terminal Profil..." -ForegroundColor Yellow
-Write-Host ""
+    Write-Host ""
+    Write-Host "Installation process completed!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Repository location: $InstallPath" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "To reinstall or update in the future, run:" -ForegroundColor Yellow
+    Write-Host "  irm https://raw.githubusercontent.com/N30Z/Claude-win11/main/install-all.ps1 | iex" -ForegroundColor Gray
+    Write-Host ""
 
-$terminalScript = Join-Path $repoRoot "scripts\terminal\install-terminal-profile.ps1"
-
-if (Test-Path $terminalScript) {
-    # Check if Windows Terminal is installed
-    $wtCmd = Get-Command wt.exe -ErrorAction SilentlyContinue
-
-    if ($wtCmd) {
-        Write-Host "Windows Terminal gefunden. Installiere Profil..." -ForegroundColor Green
-        & powershell.exe -ExecutionPolicy Bypass -File $terminalScript
-    } else {
-        Write-Host "Windows Terminal nicht gefunden - ueberspringe Profil-Installation." -ForegroundColor Yellow
-        Write-Host "Sie koennen es spaeter manuell installieren mit:" -ForegroundColor Gray
-        Write-Host "  $terminalScript" -ForegroundColor Gray
-    }
-} else {
-    Write-Host "Warning: Terminal profile script not found, skipping..." -ForegroundColor Yellow
+} catch {
+    Write-Host ""
+    Write-Host "Installation failed: $_" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "For manual installation:" -ForegroundColor Yellow
+    Write-Host "  cd '$InstallPath'" -ForegroundColor White
+    Write-Host "  .\install.ps1" -ForegroundColor White
+    Write-Host ""
+    exit 1
 }
-
-Write-Host ""
-Write-Host "Weiter zur naechsten Installation..." -ForegroundColor Gray
-Start-Sleep -Seconds 2
-Write-Host ""
-
-# ============================================================================
-# STEP 3: CONTEXT MENU
-# ============================================================================
-
-Write-Host "[3/5] Explorer-Kontextmenue..." -ForegroundColor Yellow
-Write-Host ""
-
-$contextMenuScript = Join-Path $repoRoot "scripts\registry\install-context-menu-extended.ps1"
-
-if (Test-Path $contextMenuScript) {
-    Write-Host "Installiere erweiterte Kontextmenue-Eintraege..." -ForegroundColor Green
-    & powershell.exe -ExecutionPolicy Bypass -File $contextMenuScript
-} else {
-    Write-Host "Warning: Context menu script not found, skipping..." -ForegroundColor Yellow
-}
-
-Write-Host ""
-Write-Host "Weiter zur naechsten Installation..." -ForegroundColor Gray
-Start-Sleep -Seconds 2
-Write-Host ""
-
-# ============================================================================
-# STEP 4: URL PROTOCOL
-# ============================================================================
-
-Write-Host "[4/5] URL Protocol (claude://)..." -ForegroundColor Yellow
-Write-Host ""
-
-$urlProtocolScript = Join-Path $repoRoot "scripts\url-protocol\install-url-protocol.ps1"
-
-if (Test-Path $urlProtocolScript) {
-    Write-Host "Installiere claude:// URL Protocol..." -ForegroundColor Green
-    & powershell.exe -ExecutionPolicy Bypass -File $urlProtocolScript
-} else {
-    Write-Host "Warning: URL protocol script not found, skipping..." -ForegroundColor Yellow
-}
-
-Write-Host ""
-Write-Host "Weiter zur naechsten Installation..." -ForegroundColor Gray
-Start-Sleep -Seconds 2
-Write-Host ""
-
-# ============================================================================
-# STEP 5: START MENU SHORTCUTS
-# ============================================================================
-
-Write-Host "[5/5] Startmenue-Shortcuts..." -ForegroundColor Yellow
-Write-Host ""
-
-$shortcutsScript = Join-Path $repoRoot "scripts\shortcuts\install-shortcuts.ps1"
-
-if (Test-Path $shortcutsScript) {
-    Write-Host "Installiere Start-Menue Shortcuts..." -ForegroundColor Green
-    & powershell.exe -ExecutionPolicy Bypass -File $shortcutsScript
-} else {
-    Write-Host "Warning: Shortcuts script not found, skipping..." -ForegroundColor Yellow
-}
-
-Write-Host ""
-
-# ============================================================================
-# COMPLETION
-# ============================================================================
-
-Write-Host ""
-Write-Host "=====================================================================" -ForegroundColor Green
-Write-Host "                   Installation abgeschlossen!                      " -ForegroundColor Green
-Write-Host "=====================================================================" -ForegroundColor Green
-Write-Host ""
-Write-Host "Installierte Komponenten:" -ForegroundColor Cyan
-Write-Host "  [✓] Windows Terminal Profil (falls Windows Terminal installiert)" -ForegroundColor White
-Write-Host "  [✓] Explorer-Kontextmenue (Ordner, Dateien, Hintergrund)" -ForegroundColor White
-Write-Host "  [✓] claude:// URL Protocol" -ForegroundColor White
-Write-Host "  [✓] Startmenue-Shortcuts" -ForegroundColor White
-Write-Host ""
-Write-Host "Naechste Schritte:" -ForegroundColor Yellow
-Write-Host "  1. Starten Sie den Explorer neu (explorer.exe beenden/neu starten)" -ForegroundColor White
-Write-Host "  2. Testen Sie das Kontextmenue: Rechtsklick auf Ordner -> Claude Code" -ForegroundColor White
-Write-Host "  3. Druecken Sie Win-Taste und geben Sie 'Claude' ein" -ForegroundColor White
-Write-Host ""
-Write-Host "Bei Problemen:" -ForegroundColor Yellow
-Write-Host "  Fuehren Sie 'Claude Doctor' aus dem Startmenue aus" -ForegroundColor White
-Write-Host "  oder rufen Sie auf:" -ForegroundColor White
-Write-Host "  $doctorScript" -ForegroundColor Gray
-Write-Host ""
-
-pause

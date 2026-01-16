@@ -4,6 +4,25 @@
 
 Verwandeln Sie Claude Code in ein natives Windows 11 Tool mit Explorer-Integration, URL-Protokoll, Shortcuts und System-Diagnostik.
 
+## 🚀 Quick Start
+
+```powershell
+irm https://raw.githubusercontent.com/N30Z/Claude-win11/main/install-all.ps1 | iex
+```
+
+Ein Befehl. Fertig.
+
+---
+
+## ⭐ Hat dir das Projekt geholfen?
+
+Wenn dieses Projekt deinen Workflow verbessert hat, gib uns einen **Stern** ⭐!
+Es hilft anderen, das Tool zu entdecken und motiviert zur Weiterentwicklung.
+
+**→ [Star auf GitHub](https://github.com/N30Z/Claude-win11)** ⭐
+
+---
+
 ## ✨ Neueste Verbesserungen (v1.1)
 
 **🔧 PowerShell ExecutionPolicy Fehlerbehandlung:**
@@ -108,12 +127,33 @@ Automatische Überprüfung und Reparatur:
 
 ## Installation
 
-### Schnell-Installation (Alles auf einmal)
+### 🚀 One-Liner Installation (Direkt aus Terminal)
+
+**PowerShell als Administrator öffnen und ausführen:**
+
+```powershell
+irm https://raw.githubusercontent.com/N30Z/Claude-win11/main/install-all.ps1 | iex
+```
+
+Das wars! Der Installer:
+- Lädt automatisch das Repository herunter
+- Prüft alle Voraussetzungen (Git, Claude CLI)
+- Führt die komplette Installation durch
+- Behandelt ExecutionPolicy und Administrator-Rechte automatisch
+
+**Vorteile:**
+- ✅ Keine manuelle Repository-Kloning nötig
+- ✅ Automatische Updates bei erneuter Ausführung
+- ✅ Einfache Installation wie Scoop oder andere Tools
+
+---
+
+### Lokale Installation (Repository bereits geklont)
 
 **Als Administrator PowerShell öffnen:**
 
 ```powershell
-.\install-all.ps1
+.\install.ps1
 ```
 
 Das Skript führt automatisch folgende Schritte aus:
@@ -202,7 +242,8 @@ Prüft das System und behebt Probleme automatisch.
 ```
 Claude-win11/
 │
-├── install-all.ps1              # Haupt-Installationsskript
+├── install-all.ps1              # One-Liner Remote-Installer
+├── install.ps1                  # Haupt-Installationsskript (lokal)
 ├── uninstall-all.ps1            # Haupt-Deinstallationsskript
 ├── README.md
 ├── LICENSE
@@ -334,10 +375,10 @@ Zeigt detaillierte Informationen über:
 ### Häufige Probleme
 
 **"PowerShell Scripts sind deaktiviert" (ExecutionPolicy Restricted):**
-- Symptom: `install-all.ps1` oder andere Scripts lassen sich nicht ausführen
-- **Lösung 1 (Automatisch):** Einfach `.\install-all.ps1` ausführen - das Script erkennt das Problem und bietet interaktive Behebung an
+- Symptom: `install.ps1` oder andere Scripts lassen sich nicht ausführen
+- **Lösung 1 (Automatisch):** Einfach `.\install.ps1` ausführen - das Script erkennt das Problem und bietet interaktive Behebung an
 - **Lösung 2 (Manuell):** `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
-- **Lösung 3 (Einmalig):** `powershell -ExecutionPolicy Bypass -File .\install-all.ps1`
+- **Lösung 3 (Einmalig):** `powershell -ExecutionPolicy Bypass -File .\install.ps1`
 - Alle Installations-Scripts prüfen jetzt automatisch ExecutionPolicy und bieten Fixes an
 
 **"PowerShell startet nicht als Administrator neu":**

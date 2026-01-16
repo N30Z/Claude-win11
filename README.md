@@ -4,6 +4,14 @@
 
 Verwandeln Sie Claude Code in ein natives Windows 11 Tool mit Explorer-Integration, URL-Protokoll, Shortcuts und System-Diagnostik.
 
+## 🚀 Quick Start
+
+```powershell
+irm https://raw.githubusercontent.com/N30Z/Claude-win11/main/install.ps1 | iex
+```
+
+Ein Befehl. Fertig.
+
 ## ✨ Neueste Verbesserungen (v1.1)
 
 **🔧 PowerShell ExecutionPolicy Fehlerbehandlung:**
@@ -108,7 +116,28 @@ Automatische Überprüfung und Reparatur:
 
 ## Installation
 
-### Schnell-Installation (Alles auf einmal)
+### 🚀 One-Liner Installation (Direkt aus Terminal)
+
+**PowerShell als Administrator öffnen und ausführen:**
+
+```powershell
+irm https://raw.githubusercontent.com/N30Z/Claude-win11/main/install.ps1 | iex
+```
+
+Das wars! Der Installer:
+- Lädt automatisch das Repository herunter
+- Prüft alle Voraussetzungen (Git, Claude CLI)
+- Führt die komplette Installation durch
+- Behandelt ExecutionPolicy und Administrator-Rechte automatisch
+
+**Vorteile:**
+- ✅ Keine manuelle Repository-Kloning nötig
+- ✅ Automatische Updates bei erneuter Ausführung
+- ✅ Einfache Installation wie Scoop oder andere Tools
+
+---
+
+### Lokale Installation (Repository bereits geklont)
 
 **Als Administrator PowerShell öffnen:**
 
@@ -202,6 +231,7 @@ Prüft das System und behebt Probleme automatisch.
 ```
 Claude-win11/
 │
+├── install.ps1                  # One-Liner Remote-Installer
 ├── install-all.ps1              # Haupt-Installationsskript
 ├── uninstall-all.ps1            # Haupt-Deinstallationsskript
 ├── README.md

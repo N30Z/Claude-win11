@@ -147,10 +147,10 @@ function Write-Status {
     }
 
     $icon = switch ($Status) {
-        "OK"    { "[✓]" }
+        "OK"    { "[+]" }
         "WARN"  { "[!]" }
-        "FIXED" { "[+]" }
-        "FAIL"  { "[✗]" }
+        "FIXED" { "[*]" }
+        "FAIL"  { "[X]" }
         default { "[-]" }
     }
 
